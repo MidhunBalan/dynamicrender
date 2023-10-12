@@ -1,70 +1,130 @@
-# Getting Started with Create React App
+# Dynamic Render In React Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This repo will teach how to to load your react application from a JSON configuration. 
 
-## Available Scripts
+First you need to understand, why we need to go for the dynamic rendering. 
+1. Code Reusability: You can make reusable components using dynamic rendering
+2. Just update the configuration after the base setup is done, so that, it will dynamically render. 
 
-In the project directory, you can run:
+## How we are doing this?
+This can be achieve using React.createElement 
 
-### `npm start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Step 1: 
+Create two components first: 
+1. Card
+2. Button
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+`Card.jsx`
+```
+import React from "react";
 
-### `npm test`
+function Card({ children }) {
+  return (
+    <React.Fragment>
+      <div>Main</div>
+      <div>{children}</div>
+    </React.Fragment>
+  );
+}
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+export default Card;
 
-### `npm run build`
+```
+Then 
+`Button.jsx`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+import React from "react";
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+function Button() {
+  return <div>MyButton</div>;
+}
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+export default Button;
 
-### `npm run eject`
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Step 2: 
+Create a json configuration for your app
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+`AppConfig.js`
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```
+export const APP_CONFIG = [
+  {
+    component: "card",
+    children: [
+      {
+        component: "button",
+        children: "hello",
+      },
+    ],
+  },
+];
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```
+Step 3: 
+Map your component to a key
 
-## Learn More
+`KeysToComponentMap.jsx`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```
+import Button from "../components/Button";
+import Card from "../components/Card";
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+export const KeysToComponentMap = {
+  card: Card,
+  button: Button,
+};
 
-### Code Splitting
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Step 5: 
+Add a dynamic render component
 
-### Analyzing the Bundle Size
+`DynamicRender.jsx`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```
+import React from "react";
+import { KeysToComponentMap } from "../app_config/KeysToComponentMap";
 
-### Making a Progressive Web App
+function DynamicRender(config) {
+  if (typeof KeysToComponentMap[config.component] !== "undefined") {
+    return React.createElement(
+      KeysToComponentMap[config.component],
+      {},
+      config.children &&
+        (typeof config.children === "string"
+          ? config.children
+          : config.children.map((c) => DynamicRender(c)))
+    );
+  }
+  return null;
+}
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+export default DynamicRender;
+```
 
-### Advanced Configuration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Step 5:
+Call this in your `App.js` file using React.createElement
 
-### Deployment
+```
+import { APP_CONFIG } from "./app_config/AppConfig";
+import DynamicRender from "./dynamic/DynamicRender";
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+function App() {
+  return (
+    <div className="App">
+      <div className="card-container">
+        {APP_CONFIG.map((config) => DynamicRender(config))}
+      </div>
+    </div>
+  );
+}
 
-### `npm run build` fails to minify
+export default App;
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```
+
