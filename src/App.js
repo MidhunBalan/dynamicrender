@@ -1,4 +1,4 @@
-import { APP_CONFIG } from "./app_config/GeneralConfig";
+import { APP_CONFIG } from "./app_config/AppConfig";
 import DynamicRender from "./dynamic/DynamicRender";
 
 function App() {
