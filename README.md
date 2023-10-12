@@ -80,7 +80,7 @@ export const KeysToComponentMap = {
 
 ```
 
-Step 5: 
+Step 4: 
 Add a dynamic render component
 
 `DynamicRender.jsx`
