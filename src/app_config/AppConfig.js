@@ -1,6 +1,6 @@
 export const APP_CONFIG = [
   {
-    component: "language",
+    component: "card",
     children: [
       {
         component: "button",
